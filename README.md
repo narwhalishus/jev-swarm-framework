@@ -6,6 +6,8 @@ A frontier model defines the experiment and actor profiles. Jev evaluates each a
 
 **Python 3.11+. Zero mandatory third-party dependencies. No website, browser service, or database required.**
 
+For why it is built this way and what it is trying to find out, see [DESIGN.md](DESIGN.md).
+
 ## Run it now
 
 From this directory:
@@ -62,9 +64,8 @@ python -m jev_swarm run \
   --supervise-every 2 --review --out runs/bedrock-swarm
 ```
 
-Choose a region and model your Bedrock account can invoke. The default is
-`us-east-1` / `us.anthropic.claude-sonnet-4-6`. This uses the Bedrock Runtime
-Converse API with bearer-token authentication and structured tool outputs.
+Choose a region and model your Bedrock account can invoke. This uses the Bedrock
+Runtime Converse API with bearer-token authentication and structured tool outputs.
 
 The planner creates a shared instruction, N distinct profiles and a hypothesis.
 Every two rounds, the optional supervisor can continue, stop, or prune named
@@ -173,7 +174,7 @@ See `examples/storefront.json` and `examples/onboarding.json`. The storefront's 
 
 ### Browserbase and external tools
 
-Browserbase is an adapter opportunity, **not implemented in this prototype**. A browser adapter would need to map observed UI elements to stable action IDs and return textual observations. Lookahead additionally needs a separate isolated browser/environment snapshot per branch, or reliable replay into cloned sessions. One shared live tab cannot safely represent multiple futures. Use a controlled test environment; predicted branches must not create real purchases or send messages.
+A browser adapter (for example on Browserbase) would need to map observed UI elements to stable action IDs and return textual observations. Lookahead additionally needs a separate isolated browser/environment snapshot per branch, or reliable replay into cloned sessions. One shared live tab cannot safely represent multiple futures. Use a controlled test environment; predicted branches must not create real purchases or send messages.
 
 Images and audio would require a perception adapter that converts them to appropriate textual observations before Jev evaluation.
 
@@ -195,7 +196,7 @@ async def main():
 asyncio.run(main())
 ```
 
-`on_event` is a synchronous progress/logging hook. `checkpoint` receives the result after each committed round. These hooks should be quick and should not mutate the result. Pass `supervisor=planner.supervise` to `SwarmRunner` and set `RunConfig(supervise_every=2)` for periodic frontier oversight. Adaptive replanning is not implemented.
+`on_event` is a synchronous progress/logging hook. `checkpoint` receives the result after each committed round. These hooks should be quick and should not mutate the result. Pass `supervisor=planner.supervise` to `SwarmRunner` and set `RunConfig(supervise_every=2)` for periodic frontier oversight.
 
 ## Artifacts and recovery
 
@@ -223,24 +224,11 @@ CLI resume restores graph configuration, experiment, seed and run budgets, and u
 
 An output directory containing `run.json` is protected against accidental overwrite unless `--overwrite` is supplied.
 
-## What this establishes—and what it doesn't
+## What a run does and doesn't establish
 
-Implemented: frontier planning, meaningful seeded profile variation, per-actor histories, live Jev request/response integration, sampled action selection, top-K branching, per-actor beam pruning, deadlines/budgets, deterministic environment transitions, provenance, checkpoints, trace exports, and adapters.
+A run does not establish that Jev's action distributions model humans accurately, that a larger swarm provides independent evidence, or that a simulated intervention produces real conversion lift. A synthetic A/B comparison is a scenario experiment, not a randomized experiment with real users. Keep customer observations, model judgments and hypothetical branches distinguishable. [DESIGN.md](DESIGN.md) explains why.
 
-Not established: that Jev's action distributions accurately model humans, that a larger swarm provides independent evidence, or that a simulated intervention produces actual conversion lift. A synthetic A/B comparison is a scenario experiment, not a randomized experiment with real users. Keep customer observations, model judgments and hypothetical branches distinguishable.
-
-**Live Jev verification completed:** two runs using `jev-1.13.0` made 38 actor
-decisions across 9 batch requests (18,947 input tokens). The storefront sampled
-run used 4 actors over 5 rounds; the onboarding lookahead used 3 actors over
-4 rounds with branching and pruning. Both traces are included under
-`examples/live-*`. Profiles in these runs came from seeded templates.
-
-Observed batch wall times were **4.2–9.2 seconds** from the hosted execution
-environment. These measurements include network/provider time; they do not
-establish sub-100 ms interaction latency. Bedrock payloads, response parsing,
-Keychain selection and supervisor controls have automated contract tests, but
-Bedrock was not live-tested because this hosted Linux runtime cannot access the
-user's Mac Keychain. The supplied API key is not included in this package.
+`examples/live-*` hold traces from real Jev runs. Each trace records its policy and model. Round timings include network and provider time from wherever the run executed, so they are not interaction-latency measurements.
 
 ## Verification
 
@@ -248,7 +236,7 @@ user's Mac Keychain. The supplied API key is not included in this package.
 python -m unittest discover -s tests -v
 ```
 
-The tests cover isolation, legal action enforcement, probability validation, branching budgets, termination, repeatability, transactional rounds, resume, provider payload/response contracts, and frontier plan validation. No API key is required.
+No API key is required.
 
 Optional installation provides the `jev-swarm` executable:
 
@@ -266,5 +254,3 @@ You can always run directly from source with `python -m jev_swarm`, without inst
 - Jev limitations: https://docs.typesafe.ai/model-jaggedness/jev-1.13
 - Bedrock bearer tokens and Converse: https://docs.aws.amazon.com/bedrock/latest/userguide/api-keys-use.html
 - Anthropic models and account-specific IDs: https://platform.claude.com/docs/en/models/overview
-
-Prototype prepared September 26, 2026.
