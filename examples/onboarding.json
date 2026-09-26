@@ -1,0 +1,280 @@
+{
+  "id": "onboarding",
+  "name": "Product onboarding",
+  "description": "A project-management product with sample data, setup, optional invitations, and a paid upgrade. A generic workflow environment.",
+  "initial_state": "welcome",
+  "states": [
+    {
+      "id": "welcome",
+      "label": "Welcome",
+      "observation": "You want to evaluate a project-management tool. You can create a project, explore sample data, or read the pricing page. No credit card is required.",
+      "actions": [
+        {
+          "id": "start",
+          "label": "Create a project",
+          "to": "setup",
+          "description": "Begin configuring your workspace.",
+          "tags": [
+            "commit",
+            "speed"
+          ]
+        },
+        {
+          "id": "sample",
+          "label": "Explore sample project",
+          "to": "sample",
+          "description": "Try the product before entering your own data.",
+          "tags": [
+            "research"
+          ]
+        },
+        {
+          "id": "pricing",
+          "label": "Check pricing",
+          "to": "pricing",
+          "description": "Understand free-plan limits.",
+          "tags": [
+            "budget"
+          ]
+        },
+        {
+          "id": "leave",
+          "label": "Leave",
+          "to": "exit",
+          "description": "End evaluation.",
+          "tags": [
+            "exit"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "setup",
+      "label": "Project setup",
+      "observation": "Name a project and choose a template. Import is optional. Setup will take around two minutes.",
+      "actions": [
+        {
+          "id": "create",
+          "label": "Use a template",
+          "to": "project",
+          "description": "Create the project using a template.",
+          "tags": [
+            "speed",
+            "commit"
+          ]
+        },
+        {
+          "id": "docs",
+          "label": "Read setup guide",
+          "to": "guide",
+          "description": "Review setup instructions first.",
+          "tags": [
+            "research"
+          ]
+        },
+        {
+          "id": "leave",
+          "label": "Leave",
+          "to": "exit",
+          "description": "Stop configuring.",
+          "tags": [
+            "exit"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "sample",
+      "label": "Sample project",
+      "observation": "A read-only project shows tasks, owners and deadlines. You can understand the workflow or create your own project.",
+      "actions": [
+        {
+          "id": "create",
+          "label": "Create my own project",
+          "to": "setup",
+          "description": "Apply what you learned.",
+          "tags": [
+            "commit"
+          ]
+        },
+        {
+          "id": "pricing",
+          "label": "Check plan limits",
+          "to": "pricing",
+          "description": "Review the free plan.",
+          "tags": [
+            "budget"
+          ]
+        },
+        {
+          "id": "leave",
+          "label": "Leave",
+          "to": "exit",
+          "description": "The product does not fit.",
+          "tags": [
+            "exit"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "pricing",
+      "label": "Plan comparison",
+      "observation": "Free: 3 projects, unlimited tasks, 2 members. Pro: $12/member/month, unlimited projects. No purchase is needed to evaluate.",
+      "actions": [
+        {
+          "id": "free",
+          "label": "Try free workspace",
+          "to": "setup",
+          "description": "Evaluate within the free limits.",
+          "tags": [
+            "budget",
+            "commit"
+          ]
+        },
+        {
+          "id": "guide",
+          "label": "Read feature guide",
+          "to": "guide",
+          "description": "Investigate whether features meet the goal.",
+          "tags": [
+            "research"
+          ]
+        },
+        {
+          "id": "leave",
+          "label": "Leave",
+          "to": "exit",
+          "description": "Do not continue.",
+          "tags": [
+            "exit"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "guide",
+      "label": "Setup guide",
+      "observation": "The guide explains creating a project, adding tasks and inviting teammates. Invitations are optional; templates avoid manual entry.",
+      "actions": [
+        {
+          "id": "create",
+          "label": "Create project",
+          "to": "project",
+          "description": "Use the guide to set up a project.",
+          "tags": [
+            "commit"
+          ]
+        },
+        {
+          "id": "leave",
+          "label": "Leave",
+          "to": "exit",
+          "description": "Stop evaluation.",
+          "tags": [
+            "exit"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "project",
+      "label": "First project",
+      "observation": "Your project is ready. Add a first task or invite a teammate. You can skip inviting anyone.",
+      "actions": [
+        {
+          "id": "task",
+          "label": "Add first task",
+          "to": "success",
+          "description": "Complete your first useful workflow.",
+          "tags": [
+            "commit",
+            "speed"
+          ]
+        },
+        {
+          "id": "invite",
+          "label": "Review invitations",
+          "to": "invite",
+          "description": "Consider bringing in a teammate.",
+          "tags": [
+            "research"
+          ]
+        },
+        {
+          "id": "leave",
+          "label": "Leave",
+          "to": "exit",
+          "description": "Stop before adding a task.",
+          "tags": [
+            "exit"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "invite",
+      "label": "Invite teammates",
+      "observation": "Invite by email. This is optional, and the free plan permits two members. No real emails will be sent.",
+      "actions": [
+        {
+          "id": "skip",
+          "label": "Skip and add task",
+          "to": "success",
+          "description": "Continue solo and add a task.",
+          "tags": [
+            "speed",
+            "budget",
+            "commit"
+          ]
+        },
+        {
+          "id": "invite",
+          "label": "Simulate invitation",
+          "to": "success",
+          "description": "Complete setup with a simulated teammate.",
+          "tags": [
+            "commit"
+          ]
+        },
+        {
+          "id": "leave",
+          "label": "Leave",
+          "to": "exit",
+          "description": "Stop setup.",
+          "tags": [
+            "exit"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "success",
+      "label": "Activated",
+      "observation": "The actor completed a first useful workflow.",
+      "outcome": "success",
+      "actions": []
+    },
+    {
+      "id": "exit",
+      "label": "Stopped setup",
+      "observation": "The actor ended the evaluation.",
+      "outcome": "exit",
+      "actions": []
+    }
+  ],
+  "actor_profiles": [
+    {
+      "priority": "speed",
+      "goal": "Complete a first useful task with minimal setup."
+    },
+    {
+      "priority": "research",
+      "goal": "Understand workflow and feature limitations before adopting the tool."
+    },
+    {
+      "priority": "budget",
+      "goal": "Evaluate the product on the free plan without incurring charges."
+    }
+  ]
+}

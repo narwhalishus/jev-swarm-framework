@@ -1,0 +1,93 @@
+digraph swarm {
+  rankdir=LR;
+  graph [bgcolor="white"];
+  node [shape=box, style="rounded,filled", fontname="Helvetica", fillcolor="#eef2f6"];
+  subgraph "cluster_actor-001" {
+    label="actor-001: Speed 01";
+    "actor-001/root" [label="d0 \u00b7 welcome\nexpanded", fillcolor="#e3ecfb"];
+    "actor-001/d1/6692f51e722e53d9" [label="d1 \u00b7 sample\nexpanded", fillcolor="#e3ecfb"];
+    "actor-001/root" -> "actor-001/d1/6692f51e722e53d9" [label="sample \u00b7 0.56"];
+    "actor-001/d1/7ec842d9835639fb" [label="d1 \u00b7 setup\nexpanded", fillcolor="#e3ecfb"];
+    "actor-001/root" -> "actor-001/d1/7ec842d9835639fb" [label="start \u00b7 0.44"];
+    "actor-001/d2/4f53b01048365ae4" [label="d2 \u00b7 setup\nexpanded", fillcolor="#e3ecfb"];
+    "actor-001/d1/6692f51e722e53d9" -> "actor-001/d2/4f53b01048365ae4" [label="create \u00b7 0.95"];
+    "actor-001/d2/43aee24a02c8ba4d" [label="d2 \u00b7 exit\nexit", fillcolor="#f7d5cf"];
+    "actor-001/d1/6692f51e722e53d9" -> "actor-001/d2/43aee24a02c8ba4d" [label="leave \u00b7 0.05"];
+    "actor-001/d2/b19abf6c9af8c36a" [label="d2 \u00b7 project\nexpanded", fillcolor="#e3ecfb"];
+    "actor-001/d1/7ec842d9835639fb" -> "actor-001/d2/b19abf6c9af8c36a" [label="create \u00b7 0.98"];
+    "actor-001/d2/3e096da87a65416e" [label="d2 \u00b7 exit\nexit", fillcolor="#f7d5cf"];
+    "actor-001/d1/7ec842d9835639fb" -> "actor-001/d2/3e096da87a65416e" [label="leave \u00b7 0.02"];
+    "actor-001/d3/471d50a9b76046d8" [label="d3 \u00b7 project\nexpanded", fillcolor="#e3ecfb"];
+    "actor-001/d2/4f53b01048365ae4" -> "actor-001/d3/471d50a9b76046d8" [label="create \u00b7 0.96"];
+    "actor-001/d3/dc984faaca4ae40a" [label="d3 \u00b7 exit\nexit", fillcolor="#f7d5cf"];
+    "actor-001/d2/4f53b01048365ae4" -> "actor-001/d3/dc984faaca4ae40a" [label="leave \u00b7 0.03"];
+    "actor-001/d3/e1412f25e2d8c261" [label="d3 \u00b7 success\nsuccess", fillcolor="#c9f7d9"];
+    "actor-001/d2/b19abf6c9af8c36a" -> "actor-001/d3/e1412f25e2d8c261" [label="task \u00b7 1.00"];
+    "actor-001/d4/b8ad9ae16cc3d2fc" [label="d4 \u00b7 success\nsuccess", fillcolor="#c9f7d9"];
+    "actor-001/d3/471d50a9b76046d8" -> "actor-001/d4/b8ad9ae16cc3d2fc" [label="task \u00b7 1.00"];
+  }
+  subgraph "cluster_actor-002" {
+    label="actor-002: Research 02";
+    "actor-002/root" [label="d0 \u00b7 welcome\nexpanded", fillcolor="#e3ecfb"];
+    "actor-002/d1/a97dadfaf6c233dd" [label="d1 \u00b7 sample\nexpanded", fillcolor="#e3ecfb"];
+    "actor-002/root" -> "actor-002/d1/a97dadfaf6c233dd" [label="sample \u00b7 0.65"];
+    "actor-002/d1/62e508223c257909" [label="d1 \u00b7 pricing\nexpanded", fillcolor="#e3ecfb"];
+    "actor-002/root" -> "actor-002/d1/62e508223c257909" [label="pricing \u00b7 0.35"];
+    "actor-002/d2/23f59fd29c97ee4e" [label="d2 \u00b7 setup\nexpanded", fillcolor="#e3ecfb"];
+    "actor-002/d1/a97dadfaf6c233dd" -> "actor-002/d2/23f59fd29c97ee4e" [label="create \u00b7 0.61"];
+    "actor-002/d2/e2ae805365741a2e" [label="d2 \u00b7 pricing\npruned", fillcolor="#eeeeee"];
+    "actor-002/d1/a97dadfaf6c233dd" -> "actor-002/d2/e2ae805365741a2e" [label="pricing \u00b7 0.24"];
+    "actor-002/d2/ed6152981c377c8e" [label="d2 \u00b7 guide\nexpanded", fillcolor="#e3ecfb"];
+    "actor-002/d1/62e508223c257909" -> "actor-002/d2/ed6152981c377c8e" [label="guide \u00b7 0.74"];
+    "actor-002/d2/b2727ec1079b7b21" [label="d2 \u00b7 setup\npruned", fillcolor="#eeeeee"];
+    "actor-002/d1/62e508223c257909" -> "actor-002/d2/b2727ec1079b7b21" [label="free \u00b7 0.24"];
+    "actor-002/d3/3c03efd4e1411216" [label="d3 \u00b7 guide\nexpanded", fillcolor="#e3ecfb"];
+    "actor-002/d2/23f59fd29c97ee4e" -> "actor-002/d3/3c03efd4e1411216" [label="docs \u00b7 0.57"];
+    "actor-002/d3/8ea14496cd19c863" [label="d3 \u00b7 exit\nexit", fillcolor="#f7d5cf"];
+    "actor-002/d2/23f59fd29c97ee4e" -> "actor-002/d3/8ea14496cd19c863" [label="leave \u00b7 0.24"];
+    "actor-002/d3/12332d443a5ec825" [label="d3 \u00b7 project\nexpanded", fillcolor="#e3ecfb"];
+    "actor-002/d2/ed6152981c377c8e" -> "actor-002/d3/12332d443a5ec825" [label="create \u00b7 0.67"];
+    "actor-002/d3/120f5c806e8f6dae" [label="d3 \u00b7 exit\nexit", fillcolor="#f7d5cf"];
+    "actor-002/d2/ed6152981c377c8e" -> "actor-002/d3/120f5c806e8f6dae" [label="leave \u00b7 0.33"];
+    "actor-002/d4/c7b36b14cfc27445" [label="d4 \u00b7 project\ndepth_limit", fillcolor="#e3ecfb"];
+    "actor-002/d3/3c03efd4e1411216" -> "actor-002/d4/c7b36b14cfc27445" [label="create \u00b7 0.52"];
+    "actor-002/d4/bf65891b213f8080" [label="d4 \u00b7 exit\nexit", fillcolor="#f7d5cf"];
+    "actor-002/d3/3c03efd4e1411216" -> "actor-002/d4/bf65891b213f8080" [label="leave \u00b7 0.48"];
+    "actor-002/d4/f9bdd2de7615819c" [label="d4 \u00b7 success\nsuccess", fillcolor="#c9f7d9"];
+    "actor-002/d3/12332d443a5ec825" -> "actor-002/d4/f9bdd2de7615819c" [label="task \u00b7 0.83"];
+    "actor-002/d4/4fd0dab13e61f204" [label="d4 \u00b7 exit\nexit", fillcolor="#f7d5cf"];
+    "actor-002/d3/12332d443a5ec825" -> "actor-002/d4/4fd0dab13e61f204" [label="leave \u00b7 0.16"];
+  }
+  subgraph "cluster_actor-003" {
+    label="actor-003: Budget 03";
+    "actor-003/root" [label="d0 \u00b7 welcome\nexpanded", fillcolor="#e3ecfb"];
+    "actor-003/d1/cfba21589c2fd9da" [label="d1 \u00b7 pricing\nexpanded", fillcolor="#e3ecfb"];
+    "actor-003/root" -> "actor-003/d1/cfba21589c2fd9da" [label="pricing \u00b7 0.72"];
+    "actor-003/d1/56e41231ca6fbb6d" [label="d1 \u00b7 sample\nexpanded", fillcolor="#e3ecfb"];
+    "actor-003/root" -> "actor-003/d1/56e41231ca6fbb6d" [label="sample \u00b7 0.26"];
+    "actor-003/d2/730e28315b3a6834" [label="d2 \u00b7 setup\nexpanded", fillcolor="#e3ecfb"];
+    "actor-003/d1/cfba21589c2fd9da" -> "actor-003/d2/730e28315b3a6834" [label="free \u00b7 0.89"];
+    "actor-003/d2/f795ff1ebb53ed89" [label="d2 \u00b7 guide\npruned", fillcolor="#eeeeee"];
+    "actor-003/d1/cfba21589c2fd9da" -> "actor-003/d2/f795ff1ebb53ed89" [label="guide \u00b7 0.11"];
+    "actor-003/d2/44783fb40160e8ef" [label="d2 \u00b7 pricing\nexpanded", fillcolor="#e3ecfb"];
+    "actor-003/d1/56e41231ca6fbb6d" -> "actor-003/d2/44783fb40160e8ef" [label="pricing \u00b7 0.87"];
+    "actor-003/d2/3524debe70438cbb" [label="d2 \u00b7 setup\npruned", fillcolor="#eeeeee"];
+    "actor-003/d1/56e41231ca6fbb6d" -> "actor-003/d2/3524debe70438cbb" [label="create \u00b7 0.12"];
+    "actor-003/d3/c1e76547c9f726c2" [label="d3 \u00b7 project\nexpanded", fillcolor="#e3ecfb"];
+    "actor-003/d2/730e28315b3a6834" -> "actor-003/d3/c1e76547c9f726c2" [label="create \u00b7 0.98"];
+    "actor-003/d3/f9698511298a873e" [label="d3 \u00b7 guide\npruned", fillcolor="#eeeeee"];
+    "actor-003/d2/730e28315b3a6834" -> "actor-003/d3/f9698511298a873e" [label="docs \u00b7 0.02"];
+    "actor-003/d3/ff75c37ffb92c286" [label="d3 \u00b7 setup\nexpanded", fillcolor="#e3ecfb"];
+    "actor-003/d2/44783fb40160e8ef" -> "actor-003/d3/ff75c37ffb92c286" [label="free \u00b7 0.94"];
+    "actor-003/d3/159ad92df4157d8c" [label="d3 \u00b7 guide\npruned", fillcolor="#eeeeee"];
+    "actor-003/d2/44783fb40160e8ef" -> "actor-003/d3/159ad92df4157d8c" [label="guide \u00b7 0.06"];
+    "actor-003/d4/630ff3fcbc9cbda0" [label="d4 \u00b7 success\nsuccess", fillcolor="#c9f7d9"];
+    "actor-003/d3/c1e76547c9f726c2" -> "actor-003/d4/630ff3fcbc9cbda0" [label="task \u00b7 0.99"];
+    "actor-003/d4/53965001b06313fb" [label="d4 \u00b7 exit\nexit", fillcolor="#f7d5cf"];
+    "actor-003/d3/c1e76547c9f726c2" -> "actor-003/d4/53965001b06313fb" [label="leave \u00b7 0.01"];
+    "actor-003/d4/2d3e239a737c4703" [label="d4 \u00b7 project\ndepth_limit", fillcolor="#e3ecfb"];
+    "actor-003/d3/ff75c37ffb92c286" -> "actor-003/d4/2d3e239a737c4703" [label="create \u00b7 0.90"];
+    "actor-003/d4/208bcb0329a6dcf6" [label="d4 \u00b7 exit\nexit", fillcolor="#f7d5cf"];
+    "actor-003/d3/ff75c37ffb92c286" -> "actor-003/d4/208bcb0329a6dcf6" [label="leave \u00b7 0.08"];
+  }
+}

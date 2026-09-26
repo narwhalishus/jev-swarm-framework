@@ -1,0 +1,507 @@
+{
+  "id": "storefront",
+  "name": "Storefront",
+  "description": "A controlled outdoor clothing shop. All prices, delivery dates and UI transitions are specified. No real purchases occur.",
+  "initial_state": "browse",
+  "states": [
+    {
+      "id": "browse",
+      "label": "Browse collection",
+      "observation": "Trail Supply sells a Ridge Shell for $180 (waterproof, 5-day delivery) and a Field Jacket for $95 (water-resistant, 2-day delivery). Shipping is $12, free above $150. You see the collection; no popup is shown.",
+      "actions": [
+        {
+          "id": "ridge",
+          "label": "View Ridge Shell",
+          "to": "ridge",
+          "description": "Inspect the $180 waterproof shell.",
+          "tags": [
+            "quality",
+            "weather"
+          ]
+        },
+        {
+          "id": "field",
+          "label": "View Field Jacket",
+          "to": "field",
+          "description": "Inspect the $95 water-resistant jacket.",
+          "tags": [
+            "budget",
+            "speed"
+          ]
+        },
+        {
+          "id": "compare",
+          "label": "Compare jackets",
+          "to": "compare",
+          "description": "Compare price, protection and arrival times.",
+          "tags": [
+            "research"
+          ]
+        },
+        {
+          "id": "leave",
+          "label": "Leave the site",
+          "to": "exit",
+          "description": "End the visit without purchasing.",
+          "tags": [
+            "exit"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ridge",
+      "label": "Ridge Shell",
+      "observation": "Ridge Shell: $180, fully waterproof, free shipping, arrives in 5 days. Available in your size. A product comparison and delivery details are available.",
+      "actions": [
+        {
+          "id": "add_ridge",
+          "label": "Add Ridge to cart",
+          "to": "cart_ridge",
+          "description": "Put the $180 shell in the cart.",
+          "tags": [
+            "quality",
+            "commit"
+          ]
+        },
+        {
+          "id": "compare",
+          "label": "Compare alternatives",
+          "to": "compare",
+          "description": "Compare with the cheaper Field Jacket.",
+          "tags": [
+            "research",
+            "budget"
+          ]
+        },
+        {
+          "id": "delivery",
+          "label": "Check delivery",
+          "to": "delivery",
+          "description": "Review shipping dates and costs.",
+          "tags": [
+            "speed"
+          ]
+        },
+        {
+          "id": "leave",
+          "label": "Leave the site",
+          "to": "exit",
+          "description": "End the visit without purchasing.",
+          "tags": [
+            "exit"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "field",
+      "label": "Field Jacket",
+      "observation": "Field Jacket: $95, water-resistant but not waterproof, arrives in 2 days. Shipping adds $12. Available in your size.",
+      "actions": [
+        {
+          "id": "add_field",
+          "label": "Add Field to cart",
+          "to": "cart_field",
+          "description": "Put the $95 jacket in the cart.",
+          "tags": [
+            "budget",
+            "commit"
+          ]
+        },
+        {
+          "id": "compare",
+          "label": "Compare protection",
+          "to": "compare",
+          "description": "Compare with the waterproof Ridge Shell.",
+          "tags": [
+            "weather",
+            "research"
+          ]
+        },
+        {
+          "id": "delivery",
+          "label": "Check delivery",
+          "to": "delivery",
+          "description": "Review delivery and shipping cost.",
+          "tags": [
+            "speed"
+          ]
+        },
+        {
+          "id": "leave",
+          "label": "Leave the site",
+          "to": "exit",
+          "description": "End the visit without purchasing.",
+          "tags": [
+            "exit"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "compare",
+      "label": "Compare products",
+      "observation": "Comparison: Ridge costs $180 delivered, is waterproof, arrives in 5 days. Field costs $107 delivered, is water-resistant, arrives in 2 days. Both have free 30-day returns.",
+      "actions": [
+        {
+          "id": "add_ridge",
+          "label": "Choose Ridge",
+          "to": "cart_ridge",
+          "description": "Select stronger weather protection for $180.",
+          "tags": [
+            "quality",
+            "weather",
+            "commit"
+          ]
+        },
+        {
+          "id": "add_field",
+          "label": "Choose Field",
+          "to": "cart_field",
+          "description": "Select the lower price and faster arrival for $107 delivered.",
+          "tags": [
+            "budget",
+            "speed",
+            "commit"
+          ]
+        },
+        {
+          "id": "leave",
+          "label": "Leave the site",
+          "to": "exit",
+          "description": "End the visit without purchasing.",
+          "tags": [
+            "exit"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "delivery",
+      "label": "Delivery details",
+      "observation": "Delivery cannot be expedited: Ridge arrives in 5 days; Field arrives in 2 days. Ridge ships free. Field shipping costs $12. These delivery promises are accurate.",
+      "actions": [
+        {
+          "id": "add_field",
+          "label": "Choose earlier delivery",
+          "to": "cart_field",
+          "description": "Choose Field, arriving in 2 days.",
+          "tags": [
+            "speed",
+            "commit"
+          ]
+        },
+        {
+          "id": "add_ridge",
+          "label": "Choose waterproof shell",
+          "to": "cart_ridge",
+          "description": "Choose Ridge, arriving in 5 days.",
+          "tags": [
+            "weather",
+            "commit"
+          ]
+        },
+        {
+          "id": "leave",
+          "label": "Leave the site",
+          "to": "exit",
+          "description": "End the visit without purchasing.",
+          "tags": [
+            "exit"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "cart_ridge",
+      "label": "Cart · Ridge",
+      "observation": "Cart: Ridge Shell, $180 total, delivery in 5 days. No incentive is shown. Guest checkout is available.",
+      "actions": [
+        {
+          "id": "checkout",
+          "label": "Continue to checkout",
+          "to": "checkout_ridge",
+          "description": "Proceed with the $180 shell.",
+          "tags": [
+            "commit",
+            "quality"
+          ]
+        },
+        {
+          "id": "remove",
+          "label": "Remove expensive item",
+          "to": "reconsider",
+          "description": "Remove the shell and consider another option.",
+          "tags": [
+            "budget"
+          ]
+        },
+        {
+          "id": "delivery",
+          "label": "Review delivery",
+          "to": "delivery",
+          "description": "Recheck arrival information.",
+          "tags": [
+            "speed",
+            "research"
+          ]
+        },
+        {
+          "id": "leave",
+          "label": "Leave the site",
+          "to": "exit",
+          "description": "End the visit without purchasing.",
+          "tags": [
+            "exit"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "cart_field",
+      "label": "Cart · Field",
+      "observation": "Cart: Field Jacket $95 + $12 shipping = $107. Delivery in 2 days. Guest checkout is available.",
+      "actions": [
+        {
+          "id": "checkout",
+          "label": "Continue to checkout",
+          "to": "checkout_field",
+          "description": "Proceed for $107 delivered.",
+          "tags": [
+            "commit",
+            "speed"
+          ]
+        },
+        {
+          "id": "shipping",
+          "label": "Look for shipping help",
+          "to": "shipping_help",
+          "description": "Review the available shipping assistance.",
+          "tags": [
+            "budget"
+          ]
+        },
+        {
+          "id": "compare",
+          "label": "Reconsider protection",
+          "to": "compare",
+          "description": "Check whether waterproofing matters.",
+          "tags": [
+            "weather",
+            "research"
+          ]
+        },
+        {
+          "id": "leave",
+          "label": "Leave the site",
+          "to": "exit",
+          "description": "End the visit without purchasing.",
+          "tags": [
+            "exit"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "reconsider",
+      "label": "Reconsider purchase",
+      "observation": "Your cart is empty. A quiet inline card offers the Field Jacket for $95 + $12 shipping, with 2-day delivery. No signup is required.",
+      "actions": [
+        {
+          "id": "alternative",
+          "label": "Consider lower price",
+          "to": "cart_field",
+          "description": "Add the cheaper Field Jacket.",
+          "tags": [
+            "budget",
+            "commit"
+          ]
+        },
+        {
+          "id": "return",
+          "label": "Return to Ridge",
+          "to": "cart_ridge",
+          "description": "Return to the premium waterproof option.",
+          "tags": [
+            "weather",
+            "quality"
+          ]
+        },
+        {
+          "id": "leave",
+          "label": "Leave the site",
+          "to": "exit",
+          "description": "End the visit without purchasing.",
+          "tags": [
+            "exit"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "shipping_help",
+      "label": "Shipping assistance",
+      "observation": "An inline offer waives the $12 shipping charge on the Field Jacket. Total $95, delivery in 2 days. No email or phone signup is required. This is a fixed experimental condition.",
+      "actions": [
+        {
+          "id": "accept",
+          "label": "Use free shipping",
+          "to": "checkout_offer",
+          "description": "Proceed at $95 delivered.",
+          "tags": [
+            "budget",
+            "commit"
+          ]
+        },
+        {
+          "id": "compare",
+          "label": "Compare products first",
+          "to": "compare",
+          "description": "Evaluate suitability before accepting the offer.",
+          "tags": [
+            "research"
+          ]
+        },
+        {
+          "id": "leave",
+          "label": "Leave the site",
+          "to": "exit",
+          "description": "End the visit without purchasing.",
+          "tags": [
+            "exit"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "checkout_ridge",
+      "label": "Checkout · $180",
+      "observation": "Guest checkout for Ridge Shell. Total $180, arrival in 5 days, free returns. You can complete the simulated purchase or leave.",
+      "actions": [
+        {
+          "id": "purchase",
+          "label": "Complete purchase",
+          "to": "success",
+          "description": "Complete this simulated $180 purchase.",
+          "tags": [
+            "commit",
+            "quality"
+          ]
+        },
+        {
+          "id": "leave",
+          "label": "Leave the site",
+          "to": "exit",
+          "description": "End the visit without purchasing.",
+          "tags": [
+            "exit"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "checkout_field",
+      "label": "Checkout · $107",
+      "observation": "Guest checkout for Field Jacket. Total $107, arrival in 2 days, free returns. You can complete the simulated purchase or leave.",
+      "actions": [
+        {
+          "id": "purchase",
+          "label": "Complete purchase",
+          "to": "success",
+          "description": "Complete this simulated $107 purchase.",
+          "tags": [
+            "commit",
+            "speed"
+          ]
+        },
+        {
+          "id": "leave",
+          "label": "Leave the site",
+          "to": "exit",
+          "description": "End the visit without purchasing.",
+          "tags": [
+            "exit"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "checkout_offer",
+      "label": "Checkout · $95",
+      "observation": "Guest checkout for Field Jacket with free shipping. Total $95, arrival in 2 days. You can complete the simulated purchase or leave.",
+      "actions": [
+        {
+          "id": "purchase",
+          "label": "Complete purchase",
+          "to": "success",
+          "description": "Complete this simulated $95 purchase.",
+          "tags": [
+            "commit",
+            "budget"
+          ]
+        },
+        {
+          "id": "leave",
+          "label": "Leave the site",
+          "to": "exit",
+          "description": "End the visit without purchasing.",
+          "tags": [
+            "exit"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "success",
+      "label": "Purchased",
+      "observation": "Simulated purchase completed. This is a synthetic outcome, not a real transaction.",
+      "outcome": "success",
+      "actions": []
+    },
+    {
+      "id": "exit",
+      "label": "Left without buying",
+      "observation": "The visit ended without a purchase.",
+      "outcome": "exit",
+      "actions": []
+    }
+  ],
+  "actor_profiles": [
+    {
+      "priority": "budget",
+      "goal": "Find a suitable jacket with total cost at or below $110.",
+      "traits": {
+        "budget_usd": 110
+      }
+    },
+    {
+      "priority": "weather",
+      "goal": "Find waterproof protection for prolonged heavy rain.",
+      "traits": {
+        "requires_waterproof": true
+      }
+    },
+    {
+      "priority": "speed",
+      "goal": "Get a jacket delivered within three days.",
+      "traits": {
+        "delivery_deadline_days": 3
+      }
+    },
+    {
+      "priority": "quality",
+      "goal": "Find durable weather protection, willing to pay up to $200.",
+      "traits": {
+        "budget_usd": 200
+      }
+    },
+    {
+      "priority": "research",
+      "goal": "Compare price, protection and return policies before committing.",
+      "traits": {
+        "comparison_oriented": true
+      }
+    }
+  ]
+}

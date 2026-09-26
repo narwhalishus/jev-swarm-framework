@@ -1,0 +1,57 @@
+digraph swarm {
+  rankdir=LR;
+  graph [bgcolor="white"];
+  node [shape=box, style="rounded,filled", fontname="Helvetica", fillcolor="#eef2f6"];
+  subgraph "cluster_actor-001" {
+    label="actor-001: Budget 01";
+    "actor-001/root" [label="d0 \u00b7 browse\nexpanded", fillcolor="#e3ecfb"];
+    "actor-001/d1/b5aeb539cabd9c17" [label="d1 \u00b7 field\nexpanded", fillcolor="#e3ecfb"];
+    "actor-001/root" -> "actor-001/d1/b5aeb539cabd9c17" [label="field \u00b7 0.95"];
+    "actor-001/d2/6848fd74c325d9f4" [label="d2 \u00b7 cart_field\nexpanded", fillcolor="#e3ecfb"];
+    "actor-001/d1/b5aeb539cabd9c17" -> "actor-001/d2/6848fd74c325d9f4" [label="add_field \u00b7 0.27"];
+    "actor-001/d3/5c7009954cfcdacf" [label="d3 \u00b7 checkout_field\nexpanded", fillcolor="#e3ecfb"];
+    "actor-001/d2/6848fd74c325d9f4" -> "actor-001/d3/5c7009954cfcdacf" [label="checkout \u00b7 0.97"];
+    "actor-001/d4/17975e76d1a20bba" [label="d4 \u00b7 success\nsuccess", fillcolor="#c9f7d9"];
+    "actor-001/d3/5c7009954cfcdacf" -> "actor-001/d4/17975e76d1a20bba" [label="purchase \u00b7 0.96"];
+  }
+  subgraph "cluster_actor-002" {
+    label="actor-002: Weather 02";
+    "actor-002/root" [label="d0 \u00b7 browse\nexpanded", fillcolor="#e3ecfb"];
+    "actor-002/d1/1badedbf02bffbb8" [label="d1 \u00b7 ridge\nexpanded", fillcolor="#e3ecfb"];
+    "actor-002/root" -> "actor-002/d1/1badedbf02bffbb8" [label="ridge \u00b7 0.96"];
+    "actor-002/d2/f8f9841bb2459847" [label="d2 \u00b7 compare\nexpanded", fillcolor="#e3ecfb"];
+    "actor-002/d1/1badedbf02bffbb8" -> "actor-002/d2/f8f9841bb2459847" [label="compare \u00b7 0.21"];
+    "actor-002/d3/4cf84de17efad110" [label="d3 \u00b7 cart_ridge\nexpanded", fillcolor="#e3ecfb"];
+    "actor-002/d2/f8f9841bb2459847" -> "actor-002/d3/4cf84de17efad110" [label="add_ridge \u00b7 1.00"];
+    "actor-002/d4/4df8151f46e26229" [label="d4 \u00b7 checkout_ridge\nexpanded", fillcolor="#e3ecfb"];
+    "actor-002/d3/4cf84de17efad110" -> "actor-002/d4/4df8151f46e26229" [label="checkout \u00b7 0.98"];
+    "actor-002/d5/7904f00d4429d4b9" [label="d5 \u00b7 success\nsuccess", fillcolor="#c9f7d9"];
+    "actor-002/d4/4df8151f46e26229" -> "actor-002/d5/7904f00d4429d4b9" [label="purchase \u00b7 0.96"];
+  }
+  subgraph "cluster_actor-003" {
+    label="actor-003: Speed 03";
+    "actor-003/root" [label="d0 \u00b7 browse\nexpanded", fillcolor="#e3ecfb"];
+    "actor-003/d1/88b1688af5ea2b8f" [label="d1 \u00b7 field\nexpanded", fillcolor="#e3ecfb"];
+    "actor-003/root" -> "actor-003/d1/88b1688af5ea2b8f" [label="field \u00b7 0.96"];
+    "actor-003/d2/ad0ccd29a80afdb2" [label="d2 \u00b7 cart_field\nexpanded", fillcolor="#e3ecfb"];
+    "actor-003/d1/88b1688af5ea2b8f" -> "actor-003/d2/ad0ccd29a80afdb2" [label="add_field \u00b7 0.90"];
+    "actor-003/d3/8dee7c739ff55cee" [label="d3 \u00b7 checkout_field\nexpanded", fillcolor="#e3ecfb"];
+    "actor-003/d2/ad0ccd29a80afdb2" -> "actor-003/d3/8dee7c739ff55cee" [label="checkout \u00b7 1.00"];
+    "actor-003/d4/0814ccc2b16cd7e4" [label="d4 \u00b7 success\nsuccess", fillcolor="#c9f7d9"];
+    "actor-003/d3/8dee7c739ff55cee" -> "actor-003/d4/0814ccc2b16cd7e4" [label="purchase \u00b7 1.00"];
+  }
+  subgraph "cluster_actor-004" {
+    label="actor-004: Quality 04";
+    "actor-004/root" [label="d0 \u00b7 browse\nexpanded", fillcolor="#e3ecfb"];
+    "actor-004/d1/01e3dc01b369f249" [label="d1 \u00b7 ridge\nexpanded", fillcolor="#e3ecfb"];
+    "actor-004/root" -> "actor-004/d1/01e3dc01b369f249" [label="ridge \u00b7 0.84"];
+    "actor-004/d2/b6702015b8074aad" [label="d2 \u00b7 cart_ridge\nexpanded", fillcolor="#e3ecfb"];
+    "actor-004/d1/01e3dc01b369f249" -> "actor-004/d2/b6702015b8074aad" [label="add_ridge \u00b7 0.81"];
+    "actor-004/d3/68081f076b667609" [label="d3 \u00b7 delivery\nexpanded", fillcolor="#e3ecfb"];
+    "actor-004/d2/b6702015b8074aad" -> "actor-004/d3/68081f076b667609" [label="delivery \u00b7 0.01"];
+    "actor-004/d4/cde2da98683ee5f7" [label="d4 \u00b7 cart_field\nexpanded", fillcolor="#e3ecfb"];
+    "actor-004/d3/68081f076b667609" -> "actor-004/d4/cde2da98683ee5f7" [label="add_field \u00b7 0.12"];
+    "actor-004/d5/bfae44b68073872e" [label="d5 \u00b7 checkout_field\ndepth_limit", fillcolor="#e3ecfb"];
+    "actor-004/d4/cde2da98683ee5f7" -> "actor-004/d5/bfae44b68073872e" [label="checkout \u00b7 0.69"];
+  }
+}

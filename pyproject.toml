@@ -1,0 +1,19 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "jev-swarm-framework"
+version = "0.2.0"
+description = "Seeded semantic actors and bounded lookahead over pluggable controlled environments"
+requires-python = ">=3.11"
+dependencies = []
+
+[project.scripts]
+jev-swarm = "jev_swarm.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["jev_swarm*"]
+
+[tool.setuptools.package-data]
+jev_swarm = ["assets/*.html"]

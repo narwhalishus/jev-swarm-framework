@@ -1,0 +1,21 @@
+{
+  "status": "completed",
+  "mode": "sample",
+  "policy": "jev:jev-1.13.0",
+  "actors": 4,
+  "rounds": 5,
+  "decisions": 18,
+  "nodes": 22,
+  "terminal_paths": 3,
+  "outcomes": {
+    "success": 3
+  },
+  "pruned_paths": 0,
+  "supervision_checks": 0,
+  "depth_limited_paths": 1,
+  "unfinished_paths": 0,
+  "input_tokens": 9943,
+  "provider_requests": 5,
+  "provider_duration_ms": 32404.99,
+  "interpretation": "Synthetic path counts, not measured human conversion or causal lift. Beam scores are heuristic rankings."
+}
