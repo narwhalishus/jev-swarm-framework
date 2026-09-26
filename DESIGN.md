@@ -6,6 +6,15 @@ The reasoning behind this project: why it exists, what it assumes, and what it i
 
 Jev turns a bounded semantic judgment (text in, a probability distribution over options you define out) into something cheap and fast enough to make many times over. This project explores what systems that unlocks. In particular it asks whether a swarm of such judgments exploring possible futures ("lookahead") beats one judgment at a time.
 
+## What this project is
+
+A framework and SDK, not an application. It serves two uses built on the same core:
+
+- **Running experiments.** Synthetic actors with explicit goals move through a controlled environment, and their paths can be compared across conditions.
+- **Building interfaces that react to user decisions and actions.** The storefront below is the motivating example. There the swarm keeps up with a real user and prepares the site's next move.
+
+Both uses share the same core. Jev makes stateless judgments over state the application holds, the environment owns every transition, search is bounded, and every run leaves an inspectable trace. The storefront belongs on top of the framework, not inside it: the engine stays domain-free, and storefront logic lives in environments, policies and applications.
+
 ## Where Jev earns its place
 
 A task fits when it has all four of these:
@@ -60,9 +69,9 @@ These boundaries are why the traces, reports and prompts are careful about what 
 - More branches do not mean more knowledge. Expand a branch only if believing it could change what the system does.
 - Customer observations, model judgments and hypothetical branches stay distinguishable in every artifact.
 
-## Application: an adaptive storefront
+## Motivating application: an adaptive storefront
 
-The chosen application is **a storefront that responds to the customer's current obstacle while they are still deciding.**
+The application the framework should make buildable is **a storefront that responds to the customer's current obstacle while they are still deciding.**
 
 **Predicting what a customer will do and deciding how to help are different problems.** The action is observed, but the motive is not. Say a customer removes the most expensive item from their cart. That could mean several things, each needing a different response:
 
