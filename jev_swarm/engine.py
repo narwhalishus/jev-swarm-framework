@@ -68,6 +68,34 @@ class SwarmRunner:
                     if not frontier:
                         result.status = "completed"
                         break
+                    # Retry a pending oversight checkpoint before advancing a resumed run.
+                    if (config.supervise_every and result.rounds
+                            and len(result.rounds) % config.supervise_every == 0
+                            and not any(check["round"] == len(result.rounds) for check in result.supervision)):
+                        assert self.supervisor is not None
+                        began = time.perf_counter()
+                        oversight = await self.supervisor(deepcopy(result))
+                        if not isinstance(oversight, dict):
+                            raise ValueError("Supervisor must return an oversight object")
+                        active_ids = {n.id for n in result.nodes if n.status == "active"}
+                        prune_ids = oversight.get("prune_node_ids", [])
+                        if oversight.get("action") not in {"continue", "stop"} or not isinstance(prune_ids, list) or any(not isinstance(x, str) for x in prune_ids) or not set(prune_ids).issubset(active_ids):
+                            raise ValueError("Invalid supervisor decision; completed simulation rounds are preserved")
+                        if not isinstance(oversight.get("reason"), str):
+                            raise ValueError("Supervisor decision requires a reason")
+                        oversight = {**oversight, "round": len(result.rounds), "duration_ms": round((time.perf_counter()-began)*1000,3)}
+                        result.supervision.append(oversight)
+                        for node in result.nodes:
+                            if node.id in prune_ids:
+                                node.status = "supervisor_pruned"
+                        if oversight["action"] == "stop":
+                            result.status = "supervisor_stopped"
+                        if self.checkpoint:
+                            self.checkpoint(result)
+                        self.emit("supervision", oversight)
+                        if oversight["action"] == "stop":
+                            break
+                        continue
                     for n in frontier:
                         if n.depth >= config.depth:
                             n.status = "depth_limit"
@@ -157,27 +185,6 @@ class SwarmRunner:
                             "actor_id": node.actor_id, "depth": node.depth, "action": node.history[-1]["action_id"],
                             "status": node.status, "outcome": node.outcome, "log_score": node.log_score})
                     self.emit("round", {**round_data, "summary": result.summary()})
-                    if config.supervise_every and len(result.rounds) % config.supervise_every == 0 and any(n.status == "active" for n in result.nodes):
-                        assert self.supervisor is not None
-                        began = time.perf_counter()
-                        oversight = await self.supervisor(deepcopy(result))
-                        active_ids = {n.id for n in result.nodes if n.status == "active"}
-                        prune_ids = oversight.get("prune_node_ids", [])
-                        if oversight.get("action") not in {"continue", "stop"} or not isinstance(prune_ids, list) or any(not isinstance(x, str) for x in prune_ids) or not set(prune_ids).issubset(active_ids):
-                            raise ValueError("Invalid supervisor decision; completed simulation rounds are preserved")
-                        if not isinstance(oversight.get("reason"), str):
-                            raise ValueError("Supervisor decision requires a reason")
-                        oversight = {**oversight, "round": len(result.rounds), "duration_ms": round((time.perf_counter()-began)*1000,3)}
-                        result.supervision.append(oversight)
-                        for node in result.nodes:
-                            if node.id in prune_ids:
-                                node.status = "supervisor_pruned"
-                        if self.checkpoint:
-                            self.checkpoint(result)
-                        self.emit("supervision", oversight)
-                        if oversight["action"] == "stop":
-                            result.status = "supervisor_stopped"
-                            break
         except TimeoutError:
             result.status, result.error = "timeout", "Run deadline reached; completed rounds preserved."
         except asyncio.CancelledError:

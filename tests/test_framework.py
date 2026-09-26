@@ -215,6 +215,35 @@ class ProviderTests(unittest.IsolatedAsyncioTestCase):
         self.assertNotIn('test-bedrock-secret',json.dumps(r.to_dict()))
 
 class OversightTests(unittest.IsolatedAsyncioTestCase):
+    async def test_resume_retries_pending_supervision_before_more_decisions(self):
+        async def unavailable(snapshot):
+            raise ValueError('Supervisor temporarily unavailable')
+        config=RunConfig(depth=4,mode='lookahead',supervise_every=1)
+        env=GraphEnvironment(SPEC)
+        partial=await SwarmRunner(env,Uniform(),supervisor=unavailable).run(experiment(1),config)
+        self.assertEqual(partial.status,'error')
+        self.assertEqual(len(partial.rounds),1)
+        rounds_seen=[]
+        async def recovered(snapshot):
+            rounds_seen.append(len(snapshot.rounds))
+            return {'action':'stop','prune_node_ids':[],'reason':'Inspect before proceeding.'}
+        policy=Uniform()
+        resumed=await SwarmRunner(env,policy,supervisor=recovered).run(
+            partial.experiment,partial.config,resume=partial)
+        self.assertEqual(rounds_seen,[1])
+        self.assertEqual(policy.calls,[])
+        self.assertEqual(resumed.status,'supervisor_stopped')
+
+    async def test_continue_supervision_runs_once_per_round(self):
+        rounds_seen=[]
+        async def supervise(snapshot):
+            rounds_seen.append(len(snapshot.rounds))
+            return {'action':'continue','prune_node_ids':[],'reason':'Continue exploration.'}
+        result=await SwarmRunner(GraphEnvironment(SPEC),Uniform(),supervisor=supervise).run(
+            experiment(1),RunConfig(depth=4,mode='lookahead',supervise_every=1))
+        self.assertEqual(result.status,'completed')
+        self.assertEqual(rounds_seen,[1,2,3])
+
     async def test_stop_and_prune_preserve_completed_round(self):
         async def supervise(snapshot):
             target=next(n.id for n in snapshot.nodes if n.status=='active')
