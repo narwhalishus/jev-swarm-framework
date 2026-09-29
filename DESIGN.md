@@ -15,12 +15,25 @@ A framework and SDK, not an application. It runs one kind of experiment: a swarm
 
 An offline run is a live run that never receives an event. The core operation is the same for both: restart from an observed state, keep whatever still fits, and search further within a budget.
 
-The system has four parts:
+It is an SDK in the strict sense: the host application calls it. A framework calls your code, and the offline runner has that shape. Real-time use needs the other shape, because the host app owns the event loop. Clicks arrive from the UI, so the app calls something like `session.observe(event)` and `session.best_action()`. An offline experiment is then the same SDK fed by simulated events.
 
-- **Jev** makes the repeated, stateless judgments over state the application holds.
-- **The environment** owns every transition, and search stays bounded. The engine stays domain-free, so storefront logic lives in environments, policies and applications, not in the engine.
-- **A frontier orchestrator** generates what Jev cannot: the actor profiles that give an experiment its variance, guesses about who a live user is and what they want, and candidate responses. It also oversees the run, but stays off the per-decision hot path. An orchestrator steering a swarm can quietly bias it toward its own hypothesis, so its interventions are bounded and every one is logged with a reason.
-- **An oversight UI** lets us see inside the swarm: every observation, judgment and branch, and why each branch lives or dies. It reads traces and never changes a run. It should surface what matters for judging a run: where branches converge or diverge, and how differently actors behave at the same state.
+The building blocks stay domain-free. Storefront logic lives in environments, policies and applications, never in the engine.
+
+| Building block | What it is | Storefront example |
+|---|---|---|
+| Judgment | Jev: repeated, stateless, bounded judgments over state the application holds | Which action a persona takes next; which offer form fits |
+| Environment | State, legal actions and transitions, all owned by code | Cart, product pages, checkout |
+| Roles and policies | Who acts, in what order. Each role's policy is swappable: rules, single-step Jev, or lookahead | The customer (played by Jev in simulation) and the site, which intervenes |
+| Population | Weighted guesses about who the real subject is | Shopper personas |
+| Objective | The domain's value function, owned by code | Margin plus the value of clearing inventory, within the ZOPA |
+| Session | The live loop: observe a real event, reweight and prune guesses, spawn new ones, search under a budget, return the best action | One shopping session |
+| Orchestrator | A frontier model that generates what Jev cannot and oversees runs, off the per-decision hot path | Writes personas and proposes new guesses |
+| Trace and oversight UI | A record of every observation, judgment and branch, plus a read-only view of it | Persona weights, EV per offer, uplift labels |
+
+Two blocks carry extra rules:
+
+- **The orchestrator's interventions are bounded and logged.** An orchestrator steering a swarm can quietly bias it toward its own hypothesis. So every intervention is logged with a reason, and it cannot change legal actions, goals or transitions.
+- **The oversight UI surfaces what matters for judging a run.** That means why each branch lives or dies, where branches converge or diverge, and how differently actors behave at the same state. It reads traces and never changes a run.
 
 ## Where Jev earns its place
 
@@ -71,7 +84,8 @@ These boundaries are why the traces, reports and prompts are careful about what 
 - A calibrated answer distribution is not a calibrated model of human behavior. "70% would cancel" does not mean 70% of matching customers cancel. Establishing that takes behavioral validation.
 - Many personas running on one model are not independent evidence. They share the model's mistakes, and branch counts are not customer counts.
 - Simulated branches explore the consequences of assumptions. They don't test those assumptions. A thousand branches built on a wrong world model stay confidently wrong. Only real interactions test the assumptions, which is what live experiments add.
-- Persona variance is not behavioral variance. Frontier-written personas lean toward interesting diversity rather than realistic diversity. Every actor is also judged by the same Jev weights, so distinct personas can collapse into similar behavior. Measure behavioral spread: at the same state, do different actors produce different action distributions?
+- Persona variance is not behavioral variance. Frontier-written personas lean toward interesting diversity rather than realistic diversity. Every actor is also judged by the same Jev weights, so distinct personas can collapse into similar behavior. Measure behavioral spread: at the same state, do different actors produce different action distributions? Pairwise Jensen–Shannon divergence between those distributions is one measure.
+- Simulated shoppers lean toward buying. In published evaluations, LLMs rarely predicted a real shopper quitting, and simulated A/B effects ran 10–30× larger than the real ones even when the direction matched. So offer EVs from simulation are inflated. Trust their ranking and direction before their magnitude.
 - A projected action is never an observation.
 - Per-step Jev outputs are not valid probabilities over whole paths. Combining them (for example summing log probabilities) ranks paths. It does not forecast them.
 - More branches do not mean more knowledge. Expand a branch only if believing it could change what the system does.
@@ -149,15 +163,16 @@ When the hypotheses **converge** on one response, act without first resolving th
 |---|---|
 | Prepare likely next steps: comparisons, alternatives, eligible offers | Low: a wrong prediction mostly wastes computation |
 | Test an intervention across plausible intentions | Moderate: coverage of plausible intentions matters |
-| Forecast conversion under interventions | High: needs behavioral and causal validation |
+| Forecast outcomes under interventions | High: needs behavioral and causal validation |
 
-Build around the first two.
+The first two roles are safe to build on now. The third is the incentive use case (see "Dynamic incentives" below). There the swarm ranks offers by simulated EV, and a real holdout decides how far to trust it.
 
 **Mechanics lookahead needs before it can evaluate interventions:**
 
 - **The website's action must appear in the simulated customer's next observation.** A separate "website" judge that just watches a predicted path and decides when to offer a coupon forecasts behavior. It does not evaluate what the intervention changes. Compare the options explicitly: no intervention, a comparison, an eligible offer.
 - **Branching explodes.** Expanding the top 3 actions over five levels is already 363 nodes, and more once website responses branch too. So use a beam and a wall-clock budget, merge equivalent states, drop stale results, and expand only branches that could change the current decision.
 - **Deeper is not more accurate.** Every hypothetical step compounds uncertainty and can amplify a wrong behavioral assumption.
+- **Breadth is cheap, and depth is not.** Independent questions in one request cost little extra time; TypeSafe's own "speculative fan-out" pattern packs every question you might need into one request and discards the irrelevant answers. Each level of depth is another sequential round trip.
 
 **Lookahead plausibly earns its place when the best action now depends on what happens next.** Take a customer who compares jackets, checks delivery, and removes one. A single-step decision might recommend an item. Lookahead can discover that one low-friction question ("What matters most: price, weather protection, or delivery date?") unlocks a well-tailored next response for each answer. If every decision collapses to "which coupon, right now?", lookahead adds little.
 
@@ -167,24 +182,105 @@ Lookahead is easier to validate where transitions are known and goals are explic
 
 ## Live experiments build on established patterns
 
-The loop above (observe, prune, spawn, prepare) is a well-studied pattern. Three bodies of prior art map onto it:
+The loop above (observe, prune, spawn, prepare) is a well-studied pattern. The closest algorithm is POMCP: an online planner that keeps a set of sampled guesses about a hidden state, searches from them, and re-roots at each real observation. The closest application is POMDP dialogue systems, which track a hidden user goal and choose system actions in real time. One lesson from that work: dialogue policies trained entirely on a simulator did worse with real users than partly simulator-trained ones, apparently because they exploited simulator quirks. Three ideas map onto the loop:
 
 - **Receding-horizon planning (model predictive control).** Plan a few steps ahead, act, observe, then plan again from the new state.
-- **Search-tree reuse, as in AlphaZero.** When the real move happens, its branch becomes the new root and keeps its sub-branches and statistics, and the rest is discarded. Work already done down the path the user actually took isn't wasted. That reuse is what makes staying ahead of the user realistic.
-- **Particle filtering.** Personas become guesses about who the user is and what they want. Each real action strengthens the guesses that predicted it and weakens the rest. Weak guesses are dropped, and new ones are generated from the survivors. In live mode, the orchestrator's job is proposing new guesses when none of the survivors explain what the user just did. The weights come from Jev's probabilities, so they rank guesses. They are not calibrated likelihoods until live data measures them.
+- **Particle filtering.** Personas are guesses about who the user is and what they want. Each real action strengthens the guesses that predicted it and weakens the rest. Weak guesses are dropped, and new ones are proposed when none of the survivors explain the user.
+- **Search-tree reuse.** POMCP keeps the subtree under the real move and discards the rest. DESPOT instead builds a fresh tree at each decision.
 
-Two consequences follow:
+**How the belief updates.** On each real action `a`, each persona's weight is multiplied by the probability that persona gave `a`, accumulated in log space: `w_i ← w_i × P(a | history, persona_i)`. The weights rank guesses; they are not calibrated likelihoods until live data measures them. Only real events update the belief, never imagined ones.
 
-- **A live experiment checks itself.** Every real action scores the prediction made just before it: was the action among the predicted ones, and how much probability did the swarm give it? Offline runs cannot produce this measurement, and it is the direct test of claim 2 above.
-- **The engine has to answer on demand.** The user may act before even a two-step search finishes. So the engine uses whatever search has completed and carries over the branch the user actually took.
+**Two diagnostics catch two different failures:**
 
-## Destination: dynamic incentives
+- **Collapse.** The effective sample size, `ESS = 1 / Σ w_i²`, falls when the weights pile onto a few personas. The remedy is resampling that keeps diversity.
+- **Nobody explains the user.** The swarm's mixture gives the real action low probability, even while ESS looks healthy. That points to a missing hypothesis or a wrong behavioral model, and it is the orchestrator's trigger to propose new personas.
 
-Eventually the live experiment feeds a policy that adjusts incentives for each user. The policy balances the customer's happiness and willingness to buy against the store's margin. The storefront's objective (incremental value) and its division of responsibilities still apply. Three guardrails:
+**New personas are proposals, not samples.** Before a frontier-proposed persona gets a weight, it is scored against the user's real history so far: Jev says how likely that persona was to take each observed action, in one batched request.
+
+**The belief persists, and the tree need not.** At Jev's speed rebuilding the tree on each event is affordable, so reuse is an optimization. The engine answers on demand: when the user acts, it returns the best action from whatever search has finished.
+
+**A live experiment checks itself.** Every real action scores the prediction made just before it. Score the mixture's prediction, `p(a) = Σ w_i p_i(a)`, with log loss and calibration against four baselines: Jev with no persona, a single persona, shuffled personas, and empirical action frequencies. If personas don't beat no-persona Jev, the population isn't earning its cost. Offline runs cannot produce this measurement, and it is the direct test of claim 2 above.
+
+## Dynamic incentives: finding the ZOPA
+
+The live experiment feeds a policy that adjusts incentives for each user. The goal is an honest deal both sides prefer. The zone of possible agreement (ZOPA) lies between the store's floor and the customer's ceiling. The store knows its floor exactly: unit cost, margin target, and the value of clearing inventory. The customer's ceiling is the unknown, and the swarm's reading of the session is the evidence about it. When no price clears both, there is no deal to find, and the right move is no offer. The storefront's objective (incremental value) and its division of responsibilities still apply.
+
+The decision splits three ways:
+
+- **Jev decides when**, by reading whether the customer is still open or already settling.
+- **Jev decides which form fits**: a bundle price, buy-2-get-1, free shipping, or a later text or email.
+- **The backend decides how much**, by pricing each form against the floor.
+
+**Worked example: three dresses.** A shopper has three $100 dresses in the cart. They want all three, but $300 is too much. The window is while they still want all three. Once they settle on one, an incentive has to reverse a decision instead of tipping an open one. The form of the offer matters economically, not just psychologically. With an illustrative unit cost of $40, against a baseline where they buy one dress (margin $60):
+
+| Offer | Store margin | Versus buying one |
+|---|---|---|
+| All 3 for $240 | $120 | +$60 |
+| 2 for $170 | $90 | +$30 |
+| Buy 2 get 1 (3 for $200) | $80 | +$20 |
+| All 3 for $240, to a shopper who would have paid $300 | $120 instead of $180 | −$60 |
+
+Offers tied to buying more only cost money when they produce the extra sale. Their one real risk is the last row: the customer who would have bought all three anyway. Pricing by quantity ("2 for $X, 3 for $Y") comes close to the profit of full bundle pricing. Keeping single items on sale at their normal price lets customers pick the deal that suits them.
+
+**The swarm prices that false positive.** Uplift modeling sorts customers by what an offer changes:
+
+- **Persuadables** buy only if offered.
+- **Sure things** buy either way. They are the false positive above.
+- **Lost causes** buy neither way.
+- **Sleeping dogs** are put off by the offer.
+
+No single judgment reliably tells a sure thing from a persuadable. The swarm can do it probabilistically. For each surviving persona and each eligible offer, including none, it simulates the reaction, labels the persona by uplift type, and computes:
+
+```
+EV(offer) = Σ over personas: weight × [store value if offered − store value if not offered]
+```
+
+Sure things count against every offer, so the false positive is priced in. If no offer beats doing nothing, the swarm offers nothing. This is also the sharpest form of the single-step against lookahead test: single-step asks the mindset question directly, and lookahead simulates both outcomes.
+
+**There are two layers of experiment.** Within a session, the experiments are simulated. The real customer produces one outcome, and what they would have done otherwise is never observed.
+
+- **Per session**, the swarm picks the offer by simulated EV.
+- **Across sessions**, a persistent no-offer holdout measures whether those EVs match reality. The decision log records the eligible offers, the chosen one and the probability of choosing it, the policy version and the outcome. Later causal evaluation needs all of it, and none of it can be backfilled.
+
+**Guardrails:**
 
 - **The swarm proposes, and real outcomes decide.** The swarm is good at telling which incentive is relevant: budget, delivery, or none at all. Whether an incentive pays is a causal question. It has to be learned from real outcomes, with a control group that gets no incentive, as a contextual bandit would learn it. Tuning incentives against simulated acceptance only optimizes the simulation's assumptions.
 - **Happiness needs a measured stand-in before anything optimizes it.** Returns, repeat purchases or complaints can serve. Without one, the optimizer quietly trades happiness away for margin.
-- **Incentives tied to behavior train that behavior.** If hesitating reliably produces a coupon, customers learn to hesitate. Frequency caps and some unpredictability belong in the deterministic backend. Personalized pricing also draws regulatory attention, so check the rules before it reaches real customers.
+- **Incentives tied to behavior train that behavior.** If hesitating reliably produces a coupon, customers learn to hesitate. A randomized experiment on Alibaba covering over 100 million customers found that cart promotions changed later behavior: more items added to carts and lower prices paid. Frequency caps and some unpredictability belong in the deterministic backend.
+- **Personalized offers carry disclosure duties.** New York requires the notice "THIS PRICE WAS SET BY AN ALGORITHM USING YOUR PERSONAL DATA" next to a personalized price. The EU requires telling customers when a price was personalized by automated decision-making. Regulators also act against fake urgency. Eligibility and disclosure rules live in the backend. Check the rules in force before real customers see offers.
+
+## Prior art and evidence
+
+**Planning under a hidden user type**
+
+- Silver & Veness, [Monte-Carlo Planning in Large POMDPs](https://davidstarsilver.wordpress.com/wp-content/uploads/2025/04/monte-carlo-planning-in-large-pomdps.pdf) (POMCP). Keeps a particle belief, searches from sampled states, and reuses the subtree after the real move.
+- Ye et al., [DESPOT: Online POMDP Planning with Regularization](https://jair.org/index.php/jair/article/download/11043/26215). Builds a fresh tree per decision, stops anytime using value bounds, and regularizes against overfitting its sampled scenarios.
+- Doucet & Johansen, [A Tutorial on Particle Filtering and Smoothing: Fifteen Years Later](https://www.stats.ox.ac.uk/~doucet/doucet_johansen_tutorialPF2011.pdf). Covers weight degeneracy, ESS and rejuvenation. A healthy ESS does not prove the particles cover the right region.
+- Young et al., [POMDP-based statistical spoken dialogue systems: a review](https://www.microsoft.com/en-us/research/publication/pomdp-based-statistical-spoken-dialogue-systems-a-review/), and Gašić & Young on dialogue manager optimisation. Track a hidden user goal; a fully simulator-trained policy did worse with humans than a partly trained one.
+- Zhao, Lee & Hsu, [LLM-MCTS](https://arxiv.org/abs/2305.14078). The LLM supplies beliefs and search heuristics while transitions stay known and deterministic.
+
+**Incentives and causal evaluation**
+
+- Radcliffe & Surry, [uplift modeling](https://stochasticsolutions.com/pdf/sig-based-up-trees.pdf), the source of the four uplift types. Gutierrez & Gérardy, [Causal Inference and Uplift Modelling: A Review](https://proceedings.mlr.press/v67/gutierrez17a.html).
+- Dudík et al., [Doubly Robust Policy Evaluation and Optimization](https://doi.org/10.1214/14-STS500). Explains why the decision log records action probabilities.
+- The Alibaba cart-promotion experiment, [long-term and spillover effects of price promotions](https://profiles.wustl.edu/en/publications/the-long-term-and-spillover-effects-of-price-promotions-on-retail/). Evidence that customers respond strategically.
+- Chu, Leslie & Sorensen, [Bundle-Size Pricing as an Approximation to Mixed Bundling](https://www.aeaweb.org/articles?id=10.1257/aer.101.1.263), building on Adams & Yellen's mixed bundling.
+- Bergemann, Koh & Morris, *Mechanism Design for Alignment and Control*. Mechanism design with agents whose preferences and capabilities are private. Background for incentive design, and for overseeing agents.
+
+**Simulated users**
+
+- [OPeRA](https://aclanthology.org/2026.acl-long.2033/). On real Amazon sessions, the best model predicted the exact next action 21.5% of the time with a persona and 22.1% without. Personas helped predict the type of action but not the exact action, and models rarely predicted a shopper quitting.
+- [ShopCART](https://aclanthology.org/2026.acl-long.2034/). Exact next-action accuracy was 11.9% for prompting alone and 17.3% after training on behavior.
+- [PAARS](https://aclanthology.org/2025.realm-1.11/). Personas mined from shopping histories raised four-way purchase prediction from 41% (history only) to 47%. The direction of simulated A/B effects matched reality in 2 of 3 tests, but their size ran 10–30× larger; the authors suspect a bias toward purchasing.
+- [AgentA/B](https://arxiv.org/abs/2504.09723). Directional agreement with a large Amazon experiment, but agents took far fewer actions than humans.
+- Argyle et al., [Out of One, Many](https://doi.org/10.1017/pan.2023.2), for persona-conditioned sampling. The critiques: Bisbee et al., [reduced variance and unstable estimates](https://doi.org/10.1017/pan.2024.5); Wang et al., [flattening of identity groups](https://doi.org/10.1038/s42256-025-00986-z); Aher et al., [hyper-accuracy distortion](https://arxiv.org/abs/2208.10264).
+- Hewitt, Ashokkumar et al. in [Nature](https://doi.org/10.1038/s41586-026-10742-x). LLM predictions of survey-experiment effects correlated strongly with the real ones but overestimated their size.
+- [RecSim](https://arxiv.org/abs/1909.04847), a configurable test lab rather than a validated population. [Virtual-Taobao](https://arxiv.org/abs/1805.10000), a simulator grounded in large randomized logs and validated by transferring policies online.
+
+**Platform and regulation**
+
+- TypeSafe, [speculative fan-out](https://docs.typesafe.ai/patterns/fan-out).
+- The FTC's [surveillance pricing study](https://www.ftc.gov/news-events/news/press-releases/2025/01/ftc-surveillance-pricing-study-indicates-wide-range-personal-data-used-set-individualized-consumer); the EU [Omnibus Directive](https://eur-lex.europa.eu/eli/dir/2019/2161/oj) on disclosing personalized prices; New York's [Algorithmic Pricing Disclosure Act](https://ag.ny.gov/press-release/2025/attorney-general-james-warns-new-yorkers-about-algorithmic-pricing-new-law-takes).
 
 ## Directions considered
 

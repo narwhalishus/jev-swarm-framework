@@ -45,6 +45,8 @@ python -m jev_swarm run \
 
 This uses editable, deterministically diversified profile templates and **live Jev**. It does not require a frontier key. Pin a supported Jev version for comparisons; `jev-latest` may change.
 
+To measure Jev's latency from your machine (connection setup against server time, by payload and batch size), run `python -m examples.latency_probe`. It needs `curl`.
+
 ## Full pipeline: Bedrock → N actors → Jev → oversight
 
 Set `TYPESAFE_API_KEY`. On macOS the Bedrock adapter reads only the Keychain service
